@@ -17,8 +17,7 @@ namespace KiraNodeServer.WebSockets
 
         public override async Task OnConnected(WebSocket socket)
         {
-            await base.OnConnected(socket);
-            var socketId = WebSocketConnectionManager.GetId(socket);
+            await base.OnConnected(socket);           
         }
 
         public override async Task ReceiveAsync(WebSocket socket, WebSocketReceiveResult result, byte[] buffer)
@@ -56,9 +55,21 @@ namespace KiraNodeServer.WebSockets
                     }
                 case NodesEvents.OnToggle:
                     {
+                        string clientId = input.d2;
+
+                        NodesManager mgr = new NodesManager();
+                        
+                        var node = mgr.Get(input.d2);
+
+                        if (node != null)
+                        {
+                            clientId = node.SocketId;
+                        }
+
                         string output = JsonConvert.SerializeObject(new EventDto { @event = NodesEvents.OnToggle, d1 = input.d1, d2 = socketId, d3 = input.d3 });
 
-                        await SendMessageAsync(input.d2, output);
+                        await SendMessageAsync(clientId, output);
+
                         break;
                     }
                 default:
